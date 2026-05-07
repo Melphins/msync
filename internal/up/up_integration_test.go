@@ -2,6 +2,7 @@ package up
 
 import (
 	"context"
+	"database/sql"
 	"os"
 	"path/filepath"
 	"testing"
@@ -37,13 +38,30 @@ func getProjectRoot(t *testing.T) string {
 	return ""
 }
 
+// cleanupTestDB drops all tables and resets the database to a clean state.
+// It uses DROP SCHEMA ... CASCADE to remove all objects, then recreates the public schema.
+func cleanupTestDB(t *testing.T, connStr string) {
+	t.Helper()
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		t.Logf("Warning: could not connect to test database for cleanup: %v", err)
+		return
+	}
+	defer db.Close()
+
+	// Drop and recreate public schema to remove all tables, indexes, sequences, etc.
+	_, err = db.Exec(`DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;`)
+	if err != nil {
+		t.Logf("Warning: cleanup failed: %v", err)
+	}
+}
+
 // TestRunner_Integration_ApplyMigrations tests the full up flow with a real database
 func TestRunner_Integration_ApplyMigrations(t *testing.T) {
 	if os.Getenv("SKIP_INTEGRATION") == "true" {
 		t.Skip("Skipping integration test")
 	}
 
-	// Use project root testdata/fixtures/migrations
 	projectRoot := getProjectRoot(t)
 	migrationDir := filepath.Join(projectRoot, "testdata", "fixtures", "migrations")
 	t.Logf("Using migration dir: %s", migrationDir)
@@ -63,6 +81,12 @@ func TestRunner_Integration_ApplyMigrations(t *testing.T) {
 			},
 		},
 	}
+
+	// Ensure clean database state before and after test
+	cleanupTestDB(t, cfg.Local.Connection)
+	t.Cleanup(func() {
+		cleanupTestDB(t, cfg.Local.Connection)
+	})
 
 	runner := NewRunner(cfg)
 	ctx := context.Background()
@@ -115,6 +139,12 @@ func TestRunner_Integration_DryRun(t *testing.T) {
 		},
 	}
 
+	// Ensure clean database state
+	cleanupTestDB(t, cfg.Local.Connection)
+	t.Cleanup(func() {
+		cleanupTestDB(t, cfg.Local.Connection)
+	})
+
 	runner := NewRunner(cfg)
 	ctx := context.Background()
 
@@ -159,6 +189,12 @@ func TestRunner_Integration_Reapply(t *testing.T) {
 			},
 		},
 	}
+
+	// Ensure clean database state
+	cleanupTestDB(t, cfg.Local.Connection)
+	t.Cleanup(func() {
+		cleanupTestDB(t, cfg.Local.Connection)
+	})
 
 	runner := NewRunner(cfg)
 	ctx := context.Background()
