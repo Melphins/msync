@@ -1,0 +1,64 @@
+# msync configuration
+# Copy this file to .msync.yml and customize for your project
+version: 1
+
+project:
+  name: "my-app"  # Auto-detected from git remote or package.json if not set
+
+# Target databases to sync against
+targets:
+  production:
+    type: "database"  # or "migration-dir", "reference-db"
+    adapter: "postgres"
+    # Connection string from env var (recommended)
+    connection: "${PROD_DATABASE_URL}"
+    # OR migration directory path for file-based targets
+    migration_dir: "./migrations"
+    schema_only: false  # Set true for read-only diff targets
+
+  staging:
+    type: "database"
+    adapter: "postgres"
+    connection: "${STAGING_DATABASE_URL}"
+
+# Local database configuration (what you compare against targets)
+local:
+  adapter: "postgres"  # postgres, mysql, sqlite, alembic, django, prisma, rails
+  connection: "${LOCAL_DATABASE_URL}"
+  migration_table: "schema_migrations"  # default per adapter
+  migration_dir: "./migrations"
+
+# Sync behavior
+sync:
+  warn_threshold: 3    # How many migrations behind triggers warning
+  error_threshold: 10  # How many migrations behind triggers error
+  auto_apply: false    # Auto-apply on status? (default: false)
+  require_confirmation: true  # Ask before up operations
+
+# Seed data validation (Pro feature)
+seeds:
+  enabled: true
+  rules:
+    - table: "users"
+      min_rows: 1
+    - table: "countries"
+      expected_count: 250
+
+# Team reporting (Pro feature)
+team:
+  enabled: false
+  api_key: "${MSYNC_API_KEY}"
+  server_url: "https://api.msync.com"
+  team_name: "your-team"
+  report_interval: "1h"
+
+# Pre-commit hook configuration
+hook:
+  enabled: true
+  exclude_branches: ["main", "master", "staging"]
+  trigger_paths:
+    - "migrations/**"
+    - "models/**"
+  block_on:
+    - "migrations_behind"
+    - "schema_diff"

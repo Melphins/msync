@@ -1,0 +1,30 @@
+# Test configuration for msync
+version: 1
+
+project:
+  name: "test-project"
+
+targets:
+  test-db:
+    type: "database"
+    adapter: "postgres"
+    connection: "${TEST_DATABASE_URL}"
+    migration_dir: "./testdata/fixtures/migrations"
+
+local:
+  adapter: "postgres"
+  connection: "${LOCAL_DATABASE_URL}"
+  migration_table: "schema_migrations"
+  migration_dir: "./testdata/fixtures/migrations"
+
+sync:
+  warn_threshold: 3
+  error_threshold: 10
+  auto_apply: false
+  require_confirmation: true
+
+seeds:
+  enabled: true
+  rules:
+    - table: "users"
+      min_rows: 1
