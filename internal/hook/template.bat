@@ -15,7 +15,7 @@ set "CONFIG_FILE=%PROJECT_ROOT%\.msync.yml"
 
 REM Check if config exists
 if not exist "%CONFIG_FILE%" (
-    echo ⚠️  msync: No configuration file found at .msync.yml
+    echo [WARNING] msync: No configuration file found at .msync.yml
     echo    Run 'msync init' to create one, or disable the hook in config.
     exit /b 0
 )
@@ -66,7 +66,7 @@ for /f "delims=" %%i in ('git rev-parse --abbrev-ref HEAD 2^>nul') do set "CURRE
 
 for %%e in (%EXCLUDE_BRANCHES%) do (
     if /i "!CURRENT_BRANCH!"=="%%e" (
-        echo ⏭️  msync: Skipping on excluded branch '!CURRENT_BRANCH!'
+        echo [SKIPPED] msync: Skipping on excluded branch '!CURRENT_BRANCH!'
         exit /b 0
     )
 )
@@ -97,7 +97,7 @@ if /i "!TRIGGERED!"=="false" (
     exit /b 0
 )
 
-echo 🔍 msync: Checking database migration status...
+echo [CHECK] msync: Checking database migration status...
 
 REM Run msync verify
 set "TARGET_NAME=production"
@@ -107,7 +107,7 @@ cd /d "%PROJECT_ROOT%"
 msync verify --target "!TARGET_NAME!" 2>nul
 if %ERRORLEVEL% neq 0 (
     echo.
-    echo ❌ msync: Verification failed!
+    echo [FAILED] msync: Verification failed!
     echo.
     echo Your database is out of sync with the target environment.
     echo Please run 'msync up' to apply pending migrations before committing.
@@ -118,5 +118,5 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-echo ✅ msync: Database is in sync
+echo [OK] msync: Database is in sync
 exit /b 0

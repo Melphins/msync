@@ -18,7 +18,7 @@ $CONFIG_FILE = Join-Path $PROJECT_ROOT ".msync.yml"
 
 # Check if config exists
 if (-not (Test-Path $CONFIG_FILE)) {
-    Write-Host "⚠️  msync: No configuration file found at .msync.yml"
+    Write-Host "[WARNING] msync: No configuration file found at .msync.yml"
     Write-Host "   Run 'msync init' to create one, or disable the hook in config."
     exit 0
 }
@@ -71,7 +71,7 @@ if (-not $HOOK_ENABLED) {
 $CURRENT_BRANCH = git rev-parse --abbrev-ref HEAD 2>$null
 foreach ($excluded in $EXCLUDE_BRANCHES) {
     if ($CURRENT_BRANCH -eq $excluded) {
-        Write-Host "⏭️  msync: Skipping on excluded branch '$CURRENT_BRANCH'"
+        Write-Host "[SKIPPED] msync: Skipping on excluded branch '$CURRENT_BRANCH'"
         exit 0
     }
 }
@@ -96,7 +96,7 @@ if (-not $TRIGGERED) {
     exit 0
 }
 
-Write-Host "🔍 msync: Checking database migration status..."
+Write-Host "[CHECK] msync: Checking database migration status..."
 
 # Run msync verify
 $TARGET_NAME = "production"
@@ -108,7 +108,7 @@ Set-Location $PROJECT_ROOT
 msync verify --target $TARGET_NAME 2>$null
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
-    Write-Host "❌ msync: Verification failed!"
+    Write-Host "[FAILED] msync: Verification failed!"
     Write-Host ""
     Write-Host "Your database is out of sync with the target environment."
     Write-Host "Please run 'msync up' to apply pending migrations before committing."
@@ -119,5 +119,5 @@ if ($LASTEXITCODE -ne 0) {
     exit 1
 }
 
-Write-Host "✅ msync: Database is in sync"
+Write-Host "[OK] msync: Database is in sync"
 exit 0

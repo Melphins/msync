@@ -108,6 +108,18 @@ type ColumnDiff struct {
 	NewNullable bool
 }
 
+// ToJSON converts ColumnDiff to ColumnDiffJSON for serialization
+func (d ColumnDiff) ToJSON() ColumnDiffJSON {
+	var result ColumnDiffJSON
+	result.Table = d.Table
+	result.Column = d.Column
+	result.OldType = d.OldType
+	result.NewType = d.NewType
+	result.OldNullable = d.OldNullable
+	result.NewNullable = d.NewNullable
+	return result
+}
+
 // TableDiff describes table-level differences
 type TableDiff struct {
 	ColumnsAdded    []ColumnDiff
@@ -149,14 +161,7 @@ type ColumnDiffJSON struct {
 func toColumnDiffJSON(diffs []ColumnDiff) []ColumnDiffJSON {
 	result := make([]ColumnDiffJSON, len(diffs))
 	for i, d := range diffs {
-		result[i] = ColumnDiffJSON{
-			Table:       d.Table,
-			Column:      d.Column,
-			OldType:     d.OldType,
-			NewType:     d.NewType,
-			OldNullable: d.OldNullable,
-			NewNullable: d.NewNullable,
-		}
+		result[i] = d.ToJSON()
 	}
 	return result
 }

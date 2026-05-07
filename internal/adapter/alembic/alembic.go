@@ -203,7 +203,7 @@ func (a *AlembicAdapter) ParseMigrationFile(filePath string) (adapter.Migration,
 	case ".py":
 		// Alembic Python migrations - would need to parse for revision and down_revision
 		// This is a simplified placeholder
-		return adapter.Migration{}, fmt.Errorf("Python migration parsing not yet implemented")
+		return adapter.Migration{}, fmt.Errorf("python migration parsing not yet implemented")
 	default:
 		return adapter.Migration{}, fmt.Errorf("unsupported file type: %s", ext)
 	}

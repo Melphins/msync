@@ -257,8 +257,11 @@ func (r *Runner) promptInt(reader *bufio.Reader, question string, defaultValue i
 		}
 
 		var val int
-		fmt.Sscanf(input, "%d", &val)
-		return val
+		_, err := fmt.Sscanf(input, "%d", &val)
+		if err == nil {
+			return val
+		}
+		// If parsing fails, loop and ask again
 	}
 }
 

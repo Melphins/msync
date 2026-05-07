@@ -160,10 +160,10 @@ func (r *Runner) outputText(result *CheckResult) error {
 	targetCount := result.TargetCount
 
 	if targetCount > localCount {
-		fmt.Fprintf(w, "%s\t%s\t⚠ OUT OF SYNC\t%d target migrations vs %d local\n",
+		fmt.Fprintf(w, "%s\t%s\t[WARNING] OUT OF SYNC\t%d target migrations vs %d local\n",
 			result.LocalVersion, result.TargetVersion, targetCount, localCount)
 	} else if localCount > targetCount {
-		fmt.Fprintf(w, "%s\t%s\t⚠ AHEAD\t%d local migrations vs %d target\n",
+		fmt.Fprintf(w, "%s\t%s\t[WARNING] AHEAD\t%d local migrations vs %d target\n",
 			result.LocalVersion, result.TargetVersion, localCount, targetCount)
 	} else {
 		fmt.Fprintf(w, "%s\t%s\t SYNCED\tBoth at %s\n", result.LocalVersion, result.TargetVersion, result.LocalVersion)
