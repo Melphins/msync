@@ -27,7 +27,7 @@ Thumbs.db
 # Env files (local config)
 .env
 .msync.yml
-msync
+/msync
 
 # Temporary files
 *.tmp
