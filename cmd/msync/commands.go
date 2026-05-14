@@ -10,6 +10,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Melphins/msync/internal/config"
+	"github.com/Melphins/msync/internal/dashboard"
 	"github.com/Melphins/msync/internal/diff"
 	"github.com/Melphins/msync/internal/hook"
 	"github.com/Melphins/msync/internal/initcmd"
@@ -198,6 +199,50 @@ func verifyCmd() *cobra.Command {
 	cmd.Flags().StringVarP(&targetName, "target", "t", "", "Target name to verify against")
 	cmd.Flags().IntVar(&warnThreshold, "warn-threshold", 0, "Warning threshold for pending migrations")
 	cmd.Flags().IntVar(&errorThreshold, "error-threshold", 0, "Error threshold for pending migrations")
+
+	return cmd
+}
+
+func dashboardCmd() *cobra.Command {
+	var host string
+	var port int
+
+	cmd := &cobra.Command{
+		Use:   "dashboard [--host <host>] [--port <port>]",
+		Short: "Start local web dashboard",
+		Long:  `Start a local web dashboard for checking migration synchronization status.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			cfg, err := config.Load(".msync.yml")
+			if err != nil {
+				return fmt.Errorf("failed to load configuration: %w", err)
+			}
+
+			if err := cfg.Validate(); err != nil {
+				return fmt.Errorf("invalid configuration: %w", err)
+			}
+
+			ctx, cancel := context.WithCancel(cmd.Context())
+			defer cancel()
+
+			sigChan := make(chan os.Signal, 1)
+			signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+			defer signal.Stop(sigChan)
+			go func() {
+				<-sigChan
+				fmt.Println("\nStopping dashboard...")
+				cancel()
+			}()
+
+			fmt.Printf("msync dashboard: http://%s:%d\n", host, port)
+			if err := dashboard.Serve(ctx, cfg, host, port); err != nil && err != context.Canceled {
+				return err
+			}
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&host, "host", "127.0.0.1", "Host to bind the dashboard server")
+	cmd.Flags().IntVarP(&port, "port", "p", 8080, "Port to bind the dashboard server")
 
 	return cmd
 }

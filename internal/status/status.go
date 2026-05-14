@@ -32,17 +32,17 @@ const (
 
 // CheckResult contains the result of a status check
 type CheckResult struct {
-	LocalVersion    string
-	TargetVersion   string
-	LocalCount      int
-	TargetCount     int
-	Status          SyncStatus
+	LocalVersion      string
+	TargetVersion     string
+	LocalCount        int
+	TargetCount       int
+	Status            SyncStatus
 	PendingMigrations []adapter.Migration
-	Notes           string
+	Notes             string
 }
 
-// Run executes the status check and returns structured result
-func (r *Runner) Run(ctx context.Context, targetName string, format string) (*CheckResult, error) {
+// Check executes the status check and returns structured result without writing output.
+func (r *Runner) Check(ctx context.Context, targetName string) (*CheckResult, error) {
 	// Resolve target config
 	var targetConfig *config.TargetConfig
 	if targetName == "" {
@@ -99,10 +99,10 @@ func (r *Runner) Run(ctx context.Context, targetName string, format string) (*Ch
 
 	// Build result
 	result := &CheckResult{
-		LocalVersion:    localVersion,
-		TargetVersion:   targetVersion,
-		LocalCount:      len(localApplied),
-		TargetCount:     len(targetMigs),
+		LocalVersion:      localVersion,
+		TargetVersion:     targetVersion,
+		LocalCount:        len(localApplied),
+		TargetCount:       len(targetMigs),
 		PendingMigrations: []adapter.Migration{},
 	}
 
@@ -132,7 +132,16 @@ func (r *Runner) Run(ctx context.Context, targetName string, format string) (*Ch
 		result.Notes = fmt.Sprintf("Both at %s", localVersion)
 	}
 
-	// Output based on format
+	return result, nil
+}
+
+// Run executes the status check, writes output, and returns structured result.
+func (r *Runner) Run(ctx context.Context, targetName string, format string) (*CheckResult, error) {
+	result, err := r.Check(ctx, targetName)
+	if err != nil {
+		return nil, err
+	}
+
 	if format == "json" {
 		r.outputJSON(result)
 	} else {
@@ -185,11 +194,11 @@ func (r *Runner) outputText(result *CheckResult) error {
 func (r *Runner) outputJSON(result *CheckResult) error {
 	// Simple JSON output
 	fmt.Printf("{\n")
-	fmt.Printf(`  "local": {`+"\n")
+	fmt.Printf(`  "local": {` + "\n")
 	fmt.Printf(`    "version": "%s",`+"\n", result.LocalVersion)
 	fmt.Printf(`    "migration_count": %d`+"\n", result.LocalCount)
 	fmt.Printf("  },\n")
-	fmt.Printf(`  "target": {`+"\n")
+	fmt.Printf(`  "target": {` + "\n")
 	fmt.Printf(`    "version": "%s",`+"\n", result.TargetVersion)
 	fmt.Printf(`    "migration_count": %d`+"\n", result.TargetCount)
 	fmt.Printf("  },\n")

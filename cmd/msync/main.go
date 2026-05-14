@@ -23,6 +23,7 @@ and helps you apply migrations safely.`,
 	rootCmd.AddCommand(upCmd())
 	rootCmd.AddCommand(diffCmd())
 	rootCmd.AddCommand(verifyCmd())
+	rootCmd.AddCommand(dashboardCmd())
 	rootCmd.AddCommand(initCmd())
 	rootCmd.AddCommand(adaptersCmd())
 	rootCmd.AddCommand(installHookCmd())

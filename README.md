@@ -75,6 +75,9 @@ msync init
 # Check sync status
 msync status --target production
 
+# Start the local web dashboard
+msync dashboard
+
 # Apply pending migrations
 msync up --target production
 
@@ -93,6 +96,16 @@ The `msync init` command provides an interactive wizard to generate your `.msync
 - Target environment(s) to sync against
 - Thresholds for warnings and errors
 - Pre-commit hook settings
+
+## Dashboard
+
+Start the local web dashboard to inspect migration status from a browser:
+
+```bash
+msync dashboard --host 127.0.0.1 --port 8080
+```
+
+The dashboard shows configured targets, local and target migration versions, sync state, and pending migrations.
 
 ## Pre-commit Hook
 
